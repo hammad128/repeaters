@@ -1,0 +1,80 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Data;
+using System.Data.SqlClient;
+using System.Web.UI;
+
+namespace TestGridBinding.App_Code
+{
+    public static class DataAccess 
+    {
+        public static DataSet GetDataSet(string connectionString, string spName, SqlParameter[] parameters)
+        {
+            using (SqlConnection sqlcon = new SqlConnection(connectionString))
+            {
+                try
+                {
+                    SqlCommand command = new SqlCommand(spName, sqlcon);
+                    command.CommandType = CommandType.StoredProcedure;
+                    if (parameters != null)
+                    {
+                        foreach (SqlParameter param in parameters)
+                        {
+                            command.Parameters.Add(param);
+                        }
+                    }
+
+                    SqlDataAdapter adapter = new SqlDataAdapter(command);
+                    DataSet ds = new DataSet();
+                    adapter.Fill(ds);
+
+                    return ds;
+                }
+                catch (Exception)
+                {
+                    return null;
+                }
+                finally
+                {
+                    if (sqlcon != null && sqlcon.State == ConnectionState.Open)
+                        sqlcon.Close();
+                }
+            }
+        }
+
+        public static bool ExecuteNonQuery(string connectionString, string spName, SqlParameter[] parameters)
+        {
+            using (SqlConnection sqlcon = new SqlConnection(connectionString))
+            {
+                try
+                {
+                    SqlCommand command = new SqlCommand(spName, sqlcon);
+                    command.CommandType = CommandType.StoredProcedure;
+                    if (parameters != null)
+                    {
+                        foreach (SqlParameter param in parameters)
+                        {
+                            command.Parameters.Add(param);
+                        }
+                    }
+                    if (sqlcon != null && sqlcon.State != ConnectionState.Open)
+                        sqlcon.Open();
+                    command.ExecuteNonQuery();
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+                finally
+                {
+                    if (sqlcon != null && sqlcon.State == ConnectionState.Open)
+                        sqlcon.Close();
+                }
+
+                return true;
+            }
+        }
+    }
+}
