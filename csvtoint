@@ -1,0 +1,35 @@
+Create Function [dbo].[CsvToInt] ( @Array varchar(5000))
+returns @IntTable table
+ (IntValue int)
+AS
+begin
+
+
+if( substring(@Array,len(@Array),1)=',')
+begin
+ set @Array = substring(@Array,1,len(@Array)-1)
+end
+
+
+ declare @separator char(1)
+ set @separator = ','
+
+ declare @separator_position int
+ declare @array_value varchar(1000)
+
+ set @array = @array + ','
+
+ while patindex('%,%' , @array) <> 0
+ begin
+
+select @separator_position =patindex('%,%' , @array)
+select @array_value = left(@array, @separator_position - 1)
+
+Insert @IntTable
+Values (Cast(@array_value as int))
+
+select @array = stuff(@array, 1, @separator_position, '')
+ end
+
+ return
+end
